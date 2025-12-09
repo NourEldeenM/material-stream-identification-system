@@ -8,48 +8,55 @@ function CameraFeed({ isStreaming, onStartCamera, onStopCamera, onCapture, isPro
   const streamRef = useRef(null)
 
   useEffect(() => {
-    if (isStreaming) {
-      startCamera()
-    } else {
-      stopCamera()
+    let mounted = true
+
+    const initCamera = async () => {
+      if (!isStreaming) {
+        // Stop camera
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop())
+          streamRef.current = null
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = null
+        }
+        return
+      }
+
+      // Start camera
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'environment'
+          } 
+        })
+        
+        if (mounted && videoRef.current) {
+          videoRef.current.srcObject = stream
+          streamRef.current = stream
+          setError(null)
+        }
+      } catch (err) {
+        if (mounted) {
+          console.error('Error accessing camera:', err)
+          setError('Camera access denied. Please allow camera permissions.')
+          onStopCamera()
+        }
+      }
     }
+
+    void initCamera()
 
     return () => {
-      stopCamera()
-    }
-  }, [isStreaming])
-
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'environment' // Try to use back camera on mobile
-        } 
-      })
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        streamRef.current = stream
-        setError(null)
+      mounted = false
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
       }
-    } catch (err) {
-      console.error('Error accessing camera:', err)
-      setError('Camera access denied. Please allow camera permissions.')
-      onStopCamera()
     }
-  }
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-    }
-  }
+  }, [isStreaming, onStopCamera])
 
   const captureImage = () => {
     if (!videoRef.current || !canvasRef.current) return

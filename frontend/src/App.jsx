@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
 import CameraFeed from './components/CameraFeed'
 import ClassificationResults from './components/ClassificationResults'
@@ -18,7 +18,7 @@ function App() {
     setClassificationResult(null)
   }
 
-  const handleCapture = async (imageData) => {
+  const handleCapture = async () => {
     setIsProcessing(true)
     
     // Simulate API call to backend ML model
