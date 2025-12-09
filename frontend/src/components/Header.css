@@ -1,0 +1,106 @@
+.header {
+  background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+  color: white;
+  padding: 2rem 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.recycle-icon {
+  font-size: 3rem;
+  animation: rotate 4s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.header-text h1 {
+  color: white;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.supported-materials {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.material-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.material-badge.glass {
+  background: #4FC3F7;
+  color: #01579B;
+}
+
+.material-badge.paper {
+  background: #FFEB3B;
+  color: #F57F17;
+}
+
+.material-badge.cardboard {
+  background: #D7CCC8;
+  color: #4E342E;
+}
+
+.material-badge.plastic {
+  background: #FF7043;
+  color: #BF360C;
+}
+
+.material-badge.metal {
+  background: #9E9E9E;
+  color: #212121;
+}
+
+.material-badge.trash {
+  background: #66BB6A;
+  color: #1B5E20;
+}
+
+@media (max-width: 768px) {
+  .logo-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .header-text h1 {
+    font-size: 1.5rem;
+  }
+
+  .supported-materials {
+    justify-content: center;
+  }
+}
