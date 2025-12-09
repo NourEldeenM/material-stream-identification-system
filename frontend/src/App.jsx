@@ -18,11 +18,17 @@ function App() {
     setClassificationResult(null)
   }
 
-  const handleCapture = async () => {
+  // eslint-disable-next-line no-unused-vars
+  const handleCapture = async (imageBlob) => {
     setIsProcessing(true)
     
     // Simulate API call to backend ML model
-    // In production, this would be: await fetch('/api/classify', { method: 'POST', body: imageData })
+    // In production, this would be: 
+    // const formData = new FormData();
+    // formData.append('image', imageBlob);
+    // const response = await fetch('/api/classify', { method: 'POST', body: formData })
+    // const result = await response.json()
+    
     setTimeout(() => {
       // Mock classification result for demonstration
       const materials = ['glass', 'paper', 'cardboard', 'plastic', 'metal', 'trash', 'unknown']
