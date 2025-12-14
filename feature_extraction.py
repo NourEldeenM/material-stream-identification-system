@@ -7,31 +7,23 @@ import cv2
 import numpy as np
 from pathlib import Path
 import pickle
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications.resnet50 import preprocess_input
 
 
 class FeatureExtractor:
     """
     Extracts features from images to convert from pixels to features.
-    Uses Histogram of Oriented Gradients and Color Histograms.
+    Uses ResNet50 CNN pre-trained on ImageNet.
+    ResNet50 is a pre-trained deep learning model with 50 layers.
     """
 
-    def __init__(self, image_size=(256, 256)):
+    def __init__(self):
         """
-        Initialize the feature extractor.
-        
-        Args:
-            image_size (tuple): Target size for resizing images
+        Initialize the feature extractor with ResNet50.
         """
-        self.image_size = image_size
-
-        # HOG parameters
-        self.hog = cv2.HOGDescriptor(
-            _winSize=(256, 256),  # Size of detection window
-            _blockSize=(32, 32),  # Size of blocks for normalization
-            _blockStride=(16, 16),  # Stride of blocks (How much blocks overlap)
-            _cellSize=(16, 16),  # Size of cells within blocks
-            _nbins=9  # Number of orientation bins
-        )
+        # Load pre-trained ResNet50 without top classification layer (We want features, not predictions)
+        self.model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
 
         self.classes = {
             'glass': 0,
@@ -42,114 +34,75 @@ class FeatureExtractor:
             'trash': 5
         }
 
-    def extract_hog_features(self, image):
-        """
-        Extract HOG features from image.
-        
-        Args:
-            image (np.ndarray): Input image
-            
-        Returns:
-            np.ndarray: HOG feature vector
-        """
-        # Resize image
-        resized = cv2.resize(image, self.image_size)
-
-        # Convert to grayscale
-        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-
-        # Compute HOG features
-        hog_features = self.hog.compute(gray)
-
-        return hog_features.flatten()
-
-    def extract_color_histogram(self, image):
-        """
-        Extract color histogram features from image.
-        
-        Args:
-            image (np.ndarray): Input image
-            
-        Returns:
-            np.ndarray: Color histogram feature vector
-        """
-        resized = cv2.resize(image, self.image_size)
-
-        # Compute histogram for each color channel
-        hist_features = []
-        for i in range(3):  # BGR
-            hist = cv2.calcHist([resized], [i], None, [64], [0, 256])
-            hist = hist.flatten()
-            hist = hist / (hist.sum() + 1e-7)  # Normalize
-            hist_features.append(hist)
-
-        return np.concatenate(hist_features)
-
     def extract_features(self, image):
         """
-        Extract combined feature vector from image.
+        Extract ResNet50 CNN features from image.
         
         Args:
-            image (np.ndarray): Input image
+            image (np.ndarray): Input image (BGR format from cv2)
             
         Returns:
-            np.ndarray: Combined feature vector
+            np.ndarray: ResNet50 feature vector (2048 dimensions)
         """
-        # Extract HOG features
-        hog_features = self.extract_hog_features(image)
+        # Convert BGR to RGB
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # Extract color histogram features
-        color_features = self.extract_color_histogram(image)
+        # Resize to ResNet50 input size
+        resized = cv2.resize(rgb_image, (224, 224))
 
-        # Combine features
-        features = np.concatenate([hog_features, color_features])
+        # Expand dimensions for batch (Neural networks expect batches of images, not single images) (batch of 1 image)
+        img_array = np.expand_dims(resized, axis=0)
 
-        return features
+        # Preprocess for ResNet50
+        preprocessed = preprocess_input(img_array)
+
+        # Extract features
+        features = self.model.predict(preprocessed, verbose=0)
+
+        return features.flatten()
 
     def extract_from_dataset(self, dataset_path, output_path):
         """
-        Extract features from entire dataset.
+        Extract features from dataset.
         
         Args:
             dataset_path (str): Path to dataset directory
             output_path (str): Path to save extracted features
         """
-        print("=" * 60)
         print("FEATURE EXTRACTION")
-        print("=" * 60)
+        print("-" * 60)
         print(f"Dataset: {dataset_path}")
         print(f"Output: {output_path}")
         print("-" * 60)
 
         dataset_path = Path(dataset_path)
 
-        all_features = []
-        all_labels = []
+        Features = []
+        Labels = []
 
         for class_name, class_id in self.classes.items():
             class_dir = dataset_path / class_name
 
-            image_files = list(class_dir.glob('*.jpg'))
+            images = list(class_dir.glob('*.jpg'))
 
-            print(f"\n{class_name.upper()} (ID: {class_id}): {len(image_files)} images")
+            print(f"\n{class_name.upper()} (ID: {class_id}): {len(images)} images")
 
             # Extract features from each image
-            for img_path in image_files:
+            for img_path in images:
                 img = cv2.imread(str(img_path))
                 if img is not None:
                     features = self.extract_features(img)
-                    all_features.append(features)
-                    all_labels.append(class_id)
+                    Features.append(features)
+                    Labels.append(class_id)
 
-        X = np.array(all_features)
-        y = np.array(all_labels)
+        X = np.array(Features)
+        y = np.array(Labels)
 
-        print("\n" + "=" * 60)
+        print("\n" + "-" * 60)
         print("EXTRACTION COMPLETE")
-        print("=" * 60)
+        print("-" * 60)
         print(f"Total samples: {X.shape[0]}")
         print(f"Feature vector size: {X.shape[1]}")
-        print(f"Class distribution: {np.bincount(y)}")
 
         # Save features
         output_path = Path(output_path)
@@ -165,7 +118,6 @@ class FeatureExtractor:
             pickle.dump(data, f)
 
         print(f"\nFeatures saved to: {output_path}")
-        print("=" * 60)
 
 
 def main():
@@ -175,10 +127,8 @@ def main():
     dataset_path = 'dataset_augmented'
     output_path = 'features/extracted_features.pkl'
 
-    # Initialize feature extractor
-    extractor = FeatureExtractor(image_size=(256, 256))
+    extractor = FeatureExtractor()
 
-    # Extract features
     extractor.extract_from_dataset(dataset_path, output_path)
 
 
