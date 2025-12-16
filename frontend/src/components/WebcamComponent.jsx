@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
+import axios from 'axios';
 
 const videoConstraints = {
 	width: 720,
@@ -9,12 +10,25 @@ const videoConstraints = {
 
 export default function WebcamComponent() {
 	const webcamRef = useRef(null);
-	const [imgSrc, setImgSrc] = useState(null);
+	const [result, setResult] = useState('unknown');
 
-	const capture = useCallback(() => {
-		const imageSrc = webcamRef.current.getScreenshot();
-		setImgSrc(imageSrc);
-	}, [webcamRef]);
+	async function captureFrame() {
+		const image = webcamRef.current.getScreenshot();
+		const formData = new FormData();
+		formData.append('image', image);
+		const response = await axios.post('http://localhost:8000/api/analyze', formData);
+		console.log(response);
+		setResult(response.data['prediction']);
+	}
+
+	useEffect(() => {
+		const interval = setInterval(async () => {
+			await captureFrame()
+		}, 500)
+		return () => {
+			clearInterval(interval);
+		}
+	}, []);
 
 	return (
 		<>
@@ -26,8 +40,7 @@ export default function WebcamComponent() {
 				width={720}
 				videoConstraints={videoConstraints}
 			/>
-			<button onClick={capture}>Capture Photo</button>
-			{imgSrc && <img src={imgSrc} />}
+			<p>{result}</p>
 		</>
 	);
 }
