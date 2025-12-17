@@ -8,7 +8,7 @@ const videoConstraints = {
 	facingMode: 'user',
 };
 
-export default function WebcamComponent() {
+export default function WebcamComponent({classifier}) {
 	const webcamRef = useRef(null);
 	const [result, setResult] = useState('unknown');
 
@@ -16,7 +16,7 @@ export default function WebcamComponent() {
 		const image = webcamRef.current.getScreenshot();
 		const formData = new FormData();
 		formData.append('image', image);
-		const response = await axios.post('http://localhost:8000/api/analyze', formData);
+		const response = await axios.post(`http://localhost:8000/api/analyze/${classifier}`, formData);
 		console.log(response);
 		setResult(response.data['prediction']);
 	}
@@ -31,7 +31,7 @@ export default function WebcamComponent() {
 	}, []);
 
 	return (
-		<>
+		<div className='flex flex-col items-center gap-8'>
 			<Webcam
 				audio={false}
 				height={480}
@@ -39,8 +39,9 @@ export default function WebcamComponent() {
 				screenshotFormat='image/jpeg'
 				width={720}
 				videoConstraints={videoConstraints}
+				className='rounded-2xl'
 			/>
-			<p>{result}</p>
-		</>
+			<p className='text-2xl uppercase'>{result}</p>
+		</div>
 	);
 }

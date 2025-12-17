@@ -25,6 +25,10 @@ def root():
     "service": "Models Provider Backend"
   }
   
-@app.post("/api/analyze")
-def get_model_prediction():
+@app.post("/api/analyze/svm")
+def get_svm_model_prediction():
   return {"prediction": "cardboard"}
+
+@app.post("/api/analyze/knn")
+def get_knn_model_prediction():
+  return {"prediction": "plastic"}
