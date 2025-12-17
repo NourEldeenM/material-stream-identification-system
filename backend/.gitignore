@@ -208,3 +208,4 @@ __marimo__/
 .idea
 
 dataset_augmented
+features/*
