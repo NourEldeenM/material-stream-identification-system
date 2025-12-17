@@ -95,6 +95,10 @@ class DataAugmentor:
         print(f"Source: {self.dataset_path}")
         print(f"Output: {self.output_path}")
         print("-" * 60)
+        
+        if self.output_path.exists():
+            print("Dataset augmentation directory already exists, exiting...\n")
+            return
 
         self.output_path.mkdir(parents=True, exist_ok=True)
 
