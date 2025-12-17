@@ -74,6 +74,12 @@ class FeatureExtractor:
         print(f"Dataset: {dataset_path}")
         print(f"Output: {output_path}")
         print("-" * 60)
+        
+        output_path = Path(output_path)
+        
+        if output_path.exists():
+            print(f"Features extraction already exists in {output_path}, exiting...\n")
+            return
 
         dataset_path = Path(dataset_path)
 
@@ -105,7 +111,6 @@ class FeatureExtractor:
         print(f"Feature vector size: {X.shape[1]}")
 
         # Save features
-        output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         data = {

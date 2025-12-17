@@ -206,4 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 .idea
-dataset_augmented/
+
+dataset_augmented
+features/*
