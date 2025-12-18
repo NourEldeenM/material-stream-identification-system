@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import axios from 'axios';
+import Labels from './Labels';
 
 const videoConstraints = {
 	width: 720,
@@ -10,7 +11,7 @@ const videoConstraints = {
 
 export default function WebcamComponent({ classifier }) {
 	const webcamRef = useRef(null);
-	const [result, setResult] = useState('unknown');
+	const [result, setResult] = useState('Unknown');
 	const [isProcessing, setIsProcessing] = useState(false);
 
 	function resizeImage(base64Image, maxWidth = 320, maxHeight = 240, quality = 0.7) {
@@ -46,7 +47,7 @@ export default function WebcamComponent({ classifier }) {
 		});
 	}
 
-	async function captureFrame() {
+	const captureFrame = useCallback(async () => {
 		if (isProcessing) return; // Skip if already processing
 
 		setIsProcessing(true);
@@ -65,7 +66,7 @@ export default function WebcamComponent({ classifier }) {
 		} finally {
 			setIsProcessing(false);
 		}
-	}
+	}, [isProcessing, classifier]);
 
 	useEffect(() => {
 		const interval = setInterval(async () => {
@@ -74,20 +75,18 @@ export default function WebcamComponent({ classifier }) {
 		return () => {
 			clearInterval(interval);
 		};
-	}, []);
+	}, [captureFrame]);
 
 	return (
-		<div className='flex flex-col items-center gap-8'>
+		<div className='flex flex-col items-center gap-8 p-8'>
 			<Webcam
 				audio={false}
-				height={480}
 				ref={webcamRef}
 				screenshotFormat='image/jpeg'
-				width={720}
 				videoConstraints={videoConstraints}
-				className='rounded-2xl'
+				className='rounded-2xl shadow-2xl border-4 border-gray-300'
 			/>
-			<p className='text-2xl uppercase'>{result}</p>
+			<Labels prediction={result} classifier={classifier}/>
 		</div>
 	);
 }
