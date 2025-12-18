@@ -15,14 +15,13 @@ class FeatureExtractor:
     """
     Extracts features from images to convert from pixels to features.
     Uses ResNet50 CNN pre-trained on ImageNet.
-    ResNet50 is a pre-trained deep learning model with 50 layers.
     """
 
     def __init__(self):
         """
         Initialize the feature extractor with ResNet50.
         """
-        # Load pre-trained ResNet50 without top classification layer (We want features, not predictions)
+        # Load pre-trained ResNet50 without top classification layer (We want features not predictions)
         self.model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
 
         self.classes = {
@@ -50,7 +49,7 @@ class FeatureExtractor:
         # Resize to ResNet50 input size
         resized = cv2.resize(rgb_image, (224, 224))
 
-        # Expand dimensions for batch (Neural networks expect batches of images, not single images) (batch of 1 image)
+        # Expand dimensions for batch (Neural networks expect batches of images, not single images)
         img_array = np.expand_dims(resized, axis=0)
 
         # Preprocess for ResNet50

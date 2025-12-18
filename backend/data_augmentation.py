@@ -112,7 +112,7 @@ class DataAugmentor:
 
             all_image_files = list(class_input_dir.glob('*.jpg'))
 
-            # Validate images - filter out corrupted ones
+            # filter out corrupted images
             print(f"\n{class_name.upper()}: Total {len(all_image_files)} images")
             valid_images = []
             for img_path in all_image_files:
