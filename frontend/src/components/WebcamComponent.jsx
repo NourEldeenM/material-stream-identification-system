@@ -71,7 +71,7 @@ export default function WebcamComponent({ classifier }) {
 	useEffect(() => {
 		const interval = setInterval(async () => {
 			await captureFrame();
-		}, 1000);
+		}, 500);
 		return () => {
 			clearInterval(interval);
 		};

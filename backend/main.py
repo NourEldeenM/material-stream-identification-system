@@ -51,20 +51,23 @@ def root():
     "service": "Models Provider Backend"
   }
   
+def get_decoded_image(image):
+  image = image.split(",")[1]
+  decoded_bytes = base64.b64decode(image)
+  np_arr = np.frombuffer(decoded_bytes, np.uint8)
+  return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+  
 @app.post("/api/analyze/svm")
 def get_svm_model_prediction(image: Annotated[str, Form()]):
   try:
     startTime = time.time()
-    image = image.split(",")[1]
-    decoded_bytes = base64.b64decode(image)
-    np_arr = np.frombuffer(decoded_bytes, np.uint8)
-    decoded_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-  
+    decoded_image = get_decoded_image(image)
     extracted_features = feature_extractor.extract_features(decoded_image)
     prediction = svm_model.predict(extracted_features.reshape(1, -1))
     
     request_time = time.time() - startTime
     print(f"Request time: {request_time:.3f}s")
+    
     return {"prediction": svm_classes[prediction[0].item()]}
   except Exception as e:
     print(f"An error occurred: {e}")
@@ -74,16 +77,13 @@ def get_svm_model_prediction(image: Annotated[str, Form()]):
 def get_knn_model_prediction(image: Annotated[str, Form()]):
   try:
     startTime = time.time()
-    image = image.split(",")[1]
-    decoded_bytes = base64.b64decode(image)
-    np_arr = np.frombuffer(decoded_bytes, np.uint8)
-    decoded_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-  
+    decoded_image = get_decoded_image(image)
     extracted_features = feature_extractor.extract_features(decoded_image)
     prediction = knn_model.predict(extracted_features.reshape(1, -1))
     
     request_time = time.time() - startTime
     print(f"Request time: {request_time:.3f}s")    
+    
     return {"prediction": knn_classes[prediction[0].item()]}
   except Exception as e:
     print(f"An error occurred: {e}")
