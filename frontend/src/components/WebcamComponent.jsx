@@ -55,18 +55,19 @@ export default function WebcamComponent({ classifier }) {
 			const image = webcamRef.current.getScreenshot();
 			const resizedImage = await resizeImage(image, 320, 240, 0.7);
 
-			const formData = new FormData();
-			formData.append('image', resizedImage);
 
-			const response = await axios.post(`http://localhost:8000/api/analyze/${classifier}`, formData);
-			console.log(response);
+			const params = new URLSearchParams();
+			params.append('image', resizedImage);
+
+			const response = await axios.post(`http://localhost:8000/api/analyze/${classifier}`, params);
+			console.log('Prediction:', response.data.prediction);
 			setResult(response.data['prediction']);
 		} catch (error) {
-			console.error('Error processing frame:', error);
+			console.error('Error details:', error.response || error.message);
 		} finally {
 			setIsProcessing(false);
 		}
-	}, [isProcessing, classifier]);
+	}, [classifier]);
 
 	useEffect(() => {
 		const interval = setInterval(async () => {
